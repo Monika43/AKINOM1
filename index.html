@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Business Opportunity Analyzer</title>
+    
+    <!-- ========================================== -->
+    <!-- CSS STYLES -->
+    <!-- ========================================== -->
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --surface: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --red: #fee2e2;
+            --red-text: #991b1b;
+            --green: #dcfce3;
+            --green-text: #166534;
+            --blue: #dbeafe;
+            --blue-text: #1e40af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header p {
+            margin-top: 0.5rem;
+            font-weight: 300;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Sections */
+        .form-section, .dashboard-section {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 320px;
+        }
+
+        h2 {
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Analytics & Dashboard */
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .analytics-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .card h3 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .card p {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .card small {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .bg-red { background: var(--red); color: var(--red-text); }
+        .bg-green { background: var(--green); color: var(--green-text); }
+        .bg-blue { background: var(--blue); color: var(--blue-text); }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--bg-color);
+            font-weight: 600;
+        }
+
+        /* Utilities (Loading & Modal) */
+        .hidden { display: none !important; }
+
+        #loadingOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-content button {
+            margin-top: 1.5rem;
+            background: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- HTML STRUCTURE -->
+    <!-- ========================================== -->
+
+    <!-- Header -->
+    <header>
+        <h1>Local Business Opportunity Analyzer</h1>
+        <p>Identify underserved business sectors in your locality based on real demand.</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Left Side: Data Input Form -->
+        <section class="form-section">
+            <h2>Submit Local Data</h2>
+            <form id="businessForm">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" placeholder="John Doe" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mobile">Mobile Number</label>
+                    <input type="tel" id="mobile" placeholder="1234567890" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="city">City / Locality</label>
+                    <input type="text" id="city" placeholder="e.g., Downtown, Mumbai" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="businessType">Existing Business Type (Most seen around)</label>
+                    <input type="text" id="businessType" placeholder="e.g., Coffee Shop, Grocery" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="suggestion">Suggested Business Idea (What is missing?)</label>
+                    <input type="text" id="suggestion" placeholder="e.g., Gym, Pet Store" required>
+                </div>
+
+                <button type="submit" id="submitBtn">Submit Data</button>
+            </form>
+        </section>
+
+        <!-- Right Side: Analytics Dashboard -->
+        <section class="dashboard-section">
+            <h2>Market Analysis</h2>
+            
+            <div class="filter-group">
+                <label for="cityFilter">Filter Analysis by City:</label>
+                <input type="text" id="cityFilter" placeholder="Type city to analyze...">
+            </div>
+
+            <!-- Analytics Cards -->
+            <div class="analytics-cards">
+                <div class="card bg-red">
+                    <h3>High Competition</h3>
+                    <p id="highCompetition">-</p>
+                    <small>Most existing businesses</small>
+                </div>
+                <div class="card bg-green">
+                    <h3>Opportunity Gap</h3>
+                    <p id="opportunityGap">-</p>
+                    <small>Most requested / missing</small>
+                </div>
+                <div class="card bg-blue">
+                    <h3>Total Entries</h3>
+                    <p id="totalEntries">0</p>
+                    <small>For selected locality</small>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-container">
+                <h3>Recent Submissions</h3>
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>City</th>
+                            <th>Existing Business</th>
+                            <th>Suggestion (Missing)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Dynamic content will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden">
+        <div class="spinner"></div>
+        <p>Saving data...</p>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="color: #2e7d32;">Success!</h2>
+            <p>Submitted Successfully.</p>
+            <button id="closeModalBtn">Close</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT (Must be type="module") -->
+    <!-- ========================================== -->
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    onSnapshot, 
+    query 
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+    apiKey: "AIzaSyCVxZVkW5IyyfP-xlhbTpHnYDgwLoHK8SA",
+    authDomain: "akinom1.firebaseapp.com",
+    projectId: "akinom1",
+    storageBucket: "akinom1.firebasestorage.app",
+    messagingSenderId: "284298483485",
+    appId: "1:284298483485:web:0a90d0d7e7855928e933f4"
+  };
+
+// Init
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+console.log("🔥 Firebase Connected");
+
+// DOM
+const form = document.getElementById('businessForm');
+const tableBody = document.getElementById('tableBody');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const successModal = document.getElementById('successModal');
+
+let globalData = [];
+
+// ============================
+// SAVE DATA
+// ============================
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value.trim();
+    const mobile = document.getElementById('mobile').value.trim();
+    const city = document.getElementById('city').value.trim();
+    const businessType = document.getElementById('businessType').value.trim();
+    const suggestion = document.getElementById('suggestion').value.trim();
+
+    if (!name || !mobile || !city || !businessType || !suggestion) {
+        alert("Fill all fields");
+        return;
+    }
+
+    try {
+        loadingOverlay.classList.remove('hidden');
+
+        await addDoc(collection(db, "businessSuggestions"), {
+            name,
+            mobile,
+            city: city.toLowerCase(),
+            businessType: businessType.toLowerCase(),
+            suggestion: suggestion.toLowerCase(),
+            timestamp: new Date() // ✅ FIXED
+        });
+
+        loadingOverlay.classList.add('hidden');
+        successModal.classList.remove('hidden');
+        form.reset();
+
+    } catch (err) {
+        console.error("❌ Firebase Error:", err);
+        alert("Error saving data");
+        loadingOverlay.classList.add('hidden');
+    }
+});
+
+// ============================
+// FETCH DATA (REALTIME)
+// ============================
+const q = query(collection(db, "businessSuggestions"));
+
+onSnapshot(q, (snapshot) => {
+    globalData = [];
+
+    snapshot.forEach(doc => {
+        globalData.push(doc.data());
+    });
+
+    render(globalData);
+});
+
+// ============================
+// RENDER FUNCTION
+// ============================
+function render(data) {
+    tableBody.innerHTML = "";
+
+    data.forEach(item => {
+        const row = `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.city}</td>
+                <td>${item.businessType}</td>
+                <td>${item.suggestion}</td>
+            </tr>
+        `;
+        tableBody.innerHTML += row;
+    });
+
+    console.log("📊 Data Loaded:", data);
+}
+</script>
+</body>
+</html>
